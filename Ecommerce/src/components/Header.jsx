@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { cartItems } = useCart();
+  const { cartItems, user } = useCart();
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
@@ -49,8 +49,14 @@ const Header = () => {
             <ShoppingCart size={24} />
             {cartCount > 0 && <span className="badge">{cartCount}</span>}
           </Link>
-          <Link to="/profile" className="action-btn">
-            <User size={24} />
+          <Link to={user ? "/profile" : "/login"} className="action-btn">
+            {user ? (
+              <div className="user-avatar-small" style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#fff', fontWeight: 'bold' }}>
+                {user.email[0].toUpperCase()}
+              </div>
+            ) : (
+              <User size={24} />
+            )}
           </Link>
         </div>
       </div>
