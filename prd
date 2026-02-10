@@ -1,0 +1,241 @@
+# Product Requirements Document (PRD)
+
+## 1. Product Overview
+
+**Product Name:** Mobile Shop E‑Commerce Website
+**Purpose:** Build an online platform for selling mobile phones, accessories, and related services (repairs, warranty, exchanges) for a local or national mobile shop.
+
+The platform should allow customers to browse products, compare phones, place orders, and track deliveries, while enabling shop owners to manage inventory, pricing, and promotions efficiently.
+
+---
+
+## 2. Goals & Objectives
+
+### Business Goals
+
+* Increase mobile phone and accessory sales
+* Reach customers beyond physical store location
+* Reduce manual inventory & order handling
+* Enable frequent discounts & flash sales
+
+### User Goals
+
+* Easily find and compare mobile phones
+* Trust product authenticity and warranty
+* Simple checkout and fast delivery
+* Clear stock availability and pricing
+
+---
+
+## 3. Target Users
+
+### Primary Users
+
+* Customers looking to buy smartphones online
+* Customers buying accessories (cases, chargers, earbuds)
+
+### Secondary Users
+
+* Shop Owner / Admin
+* Inventory Manager
+* Delivery Partner (optional)
+
+---
+
+## 4. User Roles & Permissions
+
+### Customer
+
+* Browse products
+* Search & filter phones
+* Add to cart & wishlist
+* Place orders
+* Track order status
+* View order history
+
+### Admin (Shop Owner)
+
+* Add / edit / delete products
+* Manage stock quantity
+* Set prices & discounts
+* Manage orders
+* Update order status
+* View sales analytics
+
+### Staff (Optional)
+
+* Update stock
+* Update order status
+
+---
+
+## 5. Core Features
+
+### 5.1 Product Catalog
+
+* Categories:
+
+  * Smartphones
+  * Accessories
+  * Refurbished Phones
+* Product Details:
+
+  * Brand, Model
+  * Price & Discount
+  * Specifications (RAM, Storage, Camera, Battery)
+  * Images (multiple)
+  * Stock availability
+  * Warranty info
+
+### 5.2 Search & Filters
+
+* Search by name or brand
+* Filters:
+
+  * Price range
+  * Brand
+  * RAM / Storage
+  * Availability (In Stock)
+
+### 5.3 Cart & Checkout
+
+* Add/remove items
+* Update quantity
+* Coupon code support
+* Checkout flow:
+
+  * Login / Guest checkout
+  * Address selection
+  * Payment method selection
+
+### 5.4 Payment System
+
+* Cash on Delivery (mandatory)
+* Online payment (optional):
+
+  * eSewa / Khalti / Stripe
+
+### 5.5 Order Management
+
+* Order status:
+
+  * Pending
+  * Confirmed
+  * Shipped
+  * Delivered
+  * Cancelled
+* Email / SMS notifications (optional)
+
+### 5.6 Inventory Management
+
+* Stock count per product
+* Auto stock reduction after purchase
+* Out‑of‑stock handling
+* Low stock alerts for admin
+
+### 5.7 Discounts & Offers
+
+* Product‑level discounts
+* Category‑level discounts
+* Flash sales (time‑based)
+* Coupon codes
+
+### 5.8 User Accounts
+
+* Login / Signup
+* Profile management
+* Address book
+* Order history
+
+---
+
+## 6. Admin Panel Requirements
+
+* Dashboard:
+
+  * Total sales
+  * Total orders
+  * Low stock items
+* Product management
+* Order management
+* Discount management
+* User management
+
+---
+
+## 7. Non‑Functional Requirements
+
+### Performance
+
+* Page load time < 3 seconds
+* Optimized images
+
+### Security
+
+* Secure authentication
+* Role‑based access control
+* Encrypted payments
+
+### Scalability
+
+* Support up to 10,000+ products
+* Handle sale spikes during discounts
+
+### SEO
+
+* SEO‑friendly URLs
+* Meta tags for products
+* Sitemap support
+
+---
+
+## 8. Tech Stack (Suggested)
+
+### Frontend
+
+* React (or Next.js)
+* Tailwind / Bootstrap
+
+### Backend
+
+* Supabase / Django / FastAPI
+
+### Database
+
+* PostgreSQL
+
+### Hosting
+
+* Vercel / Netlify (Frontend)
+* Supabase / VPS (Backend)
+
+---
+
+## 9. Future Enhancements
+
+* Product comparison feature
+* EMI / installment payments
+* AI‑based phone recommendation
+* Customer reviews & ratings
+* Mobile app (React Native)
+
+---
+
+## 10. Success Metrics
+
+* Conversion rate
+* Average order value
+* Monthly active users
+* Inventory turnover rate
+
+---
+
+## 11. Assumptions & Constraints
+
+* Initial focus on local market
+* Limited delivery coverage at launch
+* Manual verification of orders initially
+
+---
+
+**End of PRD**

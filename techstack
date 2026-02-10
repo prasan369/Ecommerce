@@ -1,0 +1,19 @@
+Quick setup overview:
+
+Supabase - database schema for products, users, orders, cart items
+React - frontend UI
+Stripe - handles all payment processing
+
+Key integrations you'll need:
+
+@supabase/supabase-js - Supabase client
+@stripe/stripe-js and @stripe/react-stripe-js - Stripe checkout
+Stripe webhooks to confirm payments and create orders in Supabase
+
+Typical flow:
+User browses → adds to cart (stored in Supabase) → clicks checkout → Stripe handles payment → webhook confirms → order saved in Supabase → confirmation email sent
+Pro tips for electronics:
+
+Use Supabase's PostgreSQL for complex product relationships (bundles, compatible accessories)
+Add product comparison feature - customers love this for electronics
+Build a robust filter system for specs (brand, price, features)

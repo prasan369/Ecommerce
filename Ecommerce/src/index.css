@@ -1,0 +1,52 @@
+:root {
+  /* Brand Colors */
+  --primary: #FC8801; /* Safety Orange */
+  --primary-hover: #e57a00;
+  --background: #040404; /* Pure Black */
+  --surface: #F8F8F8; /* Off-White */
+  --surface-dark: #121212; /* Dark surface for dark mode sections */
+  --text-main: #F8F8F8; /* Light text for dark background */
+  --text-inverse: #040404; /* Dark text for light background */
+  --text-muted: #A3A1A8; /* Muted Slate */
+  
+  /* Functional Colors */
+  --alert: #D9250A;
+  --success: #3257A7; /* Trust Blue */
+
+  /* Typography */
+  --font-main: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* Layout */
+  --max-width: 1280px;
+  --radius: 8px;
+}
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
