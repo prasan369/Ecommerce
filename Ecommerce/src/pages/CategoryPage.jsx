@@ -2,51 +2,88 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { SlidersHorizontal } from 'lucide-react';
-
-const ALL_PRODUCTS = [
-    { id: 1, name: 'MDR-Z1R Premium Headphones', price: 2299.00, sale_price: 1999.00, category: 'Audio', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500' },
-    { id: 2, name: 'Pro X Superlight Gaming Mouse', price: 159.99, sale_price: null, category: 'Gaming', image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500' },
-    { id: 3, name: 'Mechanical Keyboard RGB', price: 129.50, sale_price: 89.99, category: 'Accessories', image: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=500' },
-    { id: 4, name: 'UltraWide Monitor 34"', price: 499.00, sale_price: 449.00, category: 'Monitors', image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500' },
-    { id: 5, name: 'Smartphone Pro Max', price: 1099.00, sale_price: null, category: 'Smartphones', image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500' },
-    { id: 6, name: 'Wireless Earbuds', price: 199.00, sale_price: 149.00, category: 'Audio', image: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500' },
-    { id: 7, name: 'Gaming Console 5', price: 499.00, sale_price: null, category: 'Gaming', image: 'https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=500' },
-    { id: 8, name: 'Smart Watch Series 7', price: 399.00, sale_price: 379.00, category: 'Wearables', image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500' },
-];
+import { supabase } from '../lib/supabaseClient';
 
 const CategoryPage = () => {
-    const { id } = useParams(); // category id from url
-    const categoryName = id ? id.charAt(0).toUpperCase() + id.slice(1) : 'All Products';
-
+    const { id } = useParams(); // category slug from url
     const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState('relevance');
-    const [priceRange, setPriceRange] = useState([0, 3000]);
+    const [displayedCategoryName, setDisplayedCategoryName] = useState('');
 
     useEffect(() => {
-        // Simulate fetching and filtering
-        let filtered = ALL_PRODUCTS;
-        if (id) {
-            // Simple mapping for demo purposes. In real app, match exactly or use ID.
-            if (id !== 'all') {
-                filtered = filtered.filter(p => p.category.toLowerCase() === id.toLowerCase() || (id === 'smartphones' && p.category === 'Smartphones'));
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                let query = supabase.from('products').select('*');
+                let catName = 'All Products';
+
+                if (id && id.toLowerCase() !== 'all') {
+                    // Fetch category ID by slug (case-insensitive search if possible, or assume exact match)
+                    // We'll normalize to lowercase for slug comparison if your slugs are lowercase
+                    const { data: catData, error: catError } = await supabase
+                        .from('categories')
+                        .select('id, name')
+                        .ilike('slug', id)
+                        .maybeSingle();
+
+                    if (catData) {
+                        query = query.eq('category_id', catData.id);
+                        catName = catData.name;
+                    } else {
+                        // Fallback or empty if category doesn't exist
+                        // For now, if category not found, we might show empty or all? 
+                        // Let's filter by a non-existent ID to show empty
+                        console.warn('Category not found:', id);
+                        query = query.eq('category_id', -1);
+                        catName = id.charAt(0).toUpperCase() + id.slice(1);
+                    }
+                }
+
+                const { data, error } = await query;
+
+                if (error) throw error;
+
+                // Map DB fields to Component expectations if necessary
+                // DB: stock_quantity, images[]. Component: stock, image (single)
+                const mappedProducts = (data || []).map(p => ({
+                    ...p,
+                    price: parseFloat(p.price),
+                    sale_price: p.sale_price ? parseFloat(p.sale_price) : null,
+                    image: p.images && p.images.length > 0 ? p.images[0] : p.image_url || 'https://via.placeholder.com/300'
+                }));
+
+                setProducts(mappedProducts);
+                setDisplayedCategoryName(catName);
+
+            } catch (err) {
+                console.error('Error fetching data:', err);
+            } finally {
+                setLoading(false);
             }
-        }
+        };
 
-        // Sort
+        fetchData();
+    }, [id]);
+
+    // Sorting Logic
+    const sortedProducts = React.useMemo(() => {
+        let sorted = [...products];
         if (sortBy === 'price-low') {
-            filtered.sort((a, b) => (a.sale_price || a.price) - (b.sale_price || b.price));
+            sorted.sort((a, b) => (a.sale_price || a.price) - (b.sale_price || b.price));
         } else if (sortBy === 'price-high') {
-            filtered.sort((a, b) => (b.sale_price || b.price) - (a.sale_price || a.price));
+            sorted.sort((a, b) => (b.sale_price || b.price) - (a.sale_price || a.price));
+        } else if (sortBy === 'newest') {
+            sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         }
-
-        setProducts([...filtered]);
-    }, [id, sortBy]);
+        return sorted;
+    }, [products, sortBy]);
 
     return (
         <div className="category-page container">
             <div className="page-header">
-                <h1 className="page-title">{categoryName}</h1>
-                <div className="breadcrumb">Home / Categories / {categoryName}</div>
+                <h1 className="page-title">{displayedCategoryName}</h1>
+                <div className="breadcrumb">Home / Categories / {displayedCategoryName}</div>
             </div>
 
             <div className="content-layout">
@@ -79,7 +116,7 @@ const CategoryPage = () => {
                 {/* Product Grid */}
                 <main className="product-listing">
                     <div className="listing-header">
-                        <span>Showing {products.length} results</span>
+                        <span>Showing {sortedProducts.length} results</span>
                         <div className="sort-wrapper">
                             <label>Sort by:</label>
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
@@ -91,9 +128,11 @@ const CategoryPage = () => {
                         </div>
                     </div>
 
-                    {products.length > 0 ? (
+                    {loading ? (
+                        <div className="loading-state">Loading products...</div>
+                    ) : sortedProducts.length > 0 ? (
                         <div className="products-grid">
-                            {products.map(p => (
+                            {sortedProducts.map(p => (
                                 <ProductCard key={p.id} product={p} />
                             ))}
                         </div>
@@ -206,7 +245,7 @@ const CategoryPage = () => {
            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
            gap: 2rem;
         }
-        .no-results {
+        .no-results, .loading-state {
            text-align: center;
            padding: 3rem;
            background: #111;

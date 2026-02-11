@@ -1,44 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ShoppingCart, Heart, Star, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-
-const SAMPLE_PRODUCT_DATA = {
-  id: 1,
-  name: 'MDR-Z1R Premium Headphones',
-  price: 2299.00,
-  sale_price: 1999.00,
-  category: 'Audio',
-  description: 'Experience High-Resolution Audio with the MDR-Z1R. The lightweight, ergonomic design ensures comfort for long listening sessions, while the massive 70mm HD drivers deliver a wide frequency response range.',
-  specs: {
-    'Driver Unit': '70 mm, dome type (CCAW Voice Coil)',
-    'Frequency Response': '4 Hz - 120,000 Hz',
-    'Sensitivities': '100 dB/mW',
-    'Impedance': '64 ohm at 1 kHz',
-    'Cord Length': 'Headphone cable (approx. 3 m), Balanced-connection headphone cable (approx. 1.2 m)'
-  },
-  images: [
-    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3',
-    'https://images.unsplash.com/photo-1524678606372-87139ee98525?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-  ]
-};
+import { supabase } from '../lib/supabaseClient';
 
 const ProductDetails = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
-  // In a real app, fetch product by ID. Using sample data.
-  const product = SAMPLE_PRODUCT_DATA;
-  const [selectedImage, setSelectedImage] = useState(product.images[0]);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedImage, setSelectedImage] = useState('');
   const [quantity, setQuantity] = useState(1);
 
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        // Fetch product by ID
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, categories(name)')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        // Map/Normalize data
+        const mappedProduct = {
+          ...data,
+          price: parseFloat(data.price),
+          sale_price: data.sale_price ? parseFloat(data.sale_price) : null,
+          images: data.images && data.images.length > 0 ? data.images : [data.image_url || 'https://via.placeholder.com/600'],
+          category: data.categories?.name || 'Uncategorized',
+          specs: data.specs || {}
+        };
+
+        setProduct(mappedProduct);
+        setSelectedImage(mappedProduct.images[0]);
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        setError('Product not found or error loading details.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
   const handleAddToCart = () => {
+    if (!product) return;
+    // Normalize for cart (ensure 'image' property exists)
+    const cartItem = {
+      ...product,
+      image: product.images[0]
+    };
+
     // Add multiple items based on quantity
     for (let i = 0; i < quantity; i++) {
-      addToCart(product);
+      addToCart(cartItem);
     }
-    // In a real implementation you would probably just pass quantity to addToCart
+    alert('Added to cart!');
   };
+
+  if (loading) return <div className="product-details-page container" style={{ textAlign: 'center', padding: '4rem' }}>Loading...</div>;
+  if (error || !product) return <div className="product-details-page container" style={{ textAlign: 'center', padding: '4rem' }}>{error || 'Product not found'}</div>;
 
   return (
     <div className="product-details-page container">
@@ -79,21 +108,33 @@ const ProductDetails = () => {
           </div>
 
           <div className="price-section">
-            <span className="current-price">${product.sale_price}</span>
-            <span className="old-price">${product.price}</span>
-            <span className="save-badge">Save ${(product.price - product.sale_price).toFixed(2)}</span>
+            <span className="current-price">${product.sale_price || product.price}</span>
+            {product.sale_price && (
+              <>
+                <span className="old-price">${product.price}</span>
+                <span className="save-badge">Save ${(product.price - product.sale_price).toFixed(2)}</span>
+              </>
+            )}
           </div>
 
           <p className="description">{product.description}</p>
+
+          <div className="stock-status">
+            {product.stock_quantity > 0 ? (
+              <span style={{ color: '#10B981' }}>In Stock ({product.stock_quantity})</span>
+            ) : (
+              <span style={{ color: '#EF4444' }}>Out of Stock</span>
+            )}
+          </div>
 
           <div className="actions-section">
             <div className="quantity-selector">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
               <span>{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)}>+</button>
+              <button onChange={() => { }} onClick={() => setQuantity(quantity + 1)}>+</button>
             </div>
-            <button className="add-to-cart-btn" onClick={handleAddToCart}>
-              <ShoppingCart size={20} /> Add to Cart
+            <button className="add-to-cart-btn" onClick={handleAddToCart} disabled={product.stock_quantity <= 0}>
+              <ShoppingCart size={20} /> {product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
             </button>
             <button className="wishlist-btn-large">
               <Heart size={20} />
@@ -130,12 +171,14 @@ const ProductDetails = () => {
         <h2>Technical Specifications</h2>
         <table className="specs-table">
           <tbody>
-            {Object.entries(product.specs).map(([key, value]) => (
+            {(product.specs && Object.keys(product.specs).length > 0) ? Object.entries(product.specs).map(([key, value]) => (
               <tr key={key}>
                 <th>{key}</th>
                 <td>{value}</td>
               </tr>
-            ))}
+            )) : (
+              <tr><td>No specifications available</td></tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -172,6 +215,7 @@ const ProductDetails = () => {
         .thumbnail-list {
           display: flex;
           gap: 1rem;
+          flex-wrap: wrap;
         }
         .thumbnail {
           width: 80px;
@@ -244,6 +288,11 @@ const ProductDetails = () => {
           margin-bottom: 2rem;
         }
 
+        .stock-status {
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
         .actions-section {
           display: flex;
           gap: 1rem;
@@ -291,6 +340,10 @@ const ProductDetails = () => {
         }
         .add-to-cart-btn:hover {
           background-color: var(--primary-hover);
+        }
+        .add-to-cart-btn:disabled {
+            background-color: #333;
+            cursor: not-allowed;
         }
         .wishlist-btn-large {
           width: 48px;

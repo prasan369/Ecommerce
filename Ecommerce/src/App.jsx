@@ -10,6 +10,7 @@ import Checkout from './pages/Checkout';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import OrderDetail from './pages/OrderDetail';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/order/:id" element={<OrderDetail />} />
             {/* Add more routes here */}
           </Routes>
         </main>

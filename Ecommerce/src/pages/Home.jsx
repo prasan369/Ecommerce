@@ -1,46 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Hero from '../components/Hero';
 import DailyDeals from '../components/DailyDeals';
 import CategoryGrid from '../components/CategoryGrid';
 import ProductCard from '../components/ProductCard';
 import Footer from '../components/Footer';
-
-const SAMPLE_PRODUCTS = [
-    {
-        id: 1,
-        name: 'MDR-Z1R Premium Headphones',
-        price: 2299.00,
-        sale_price: 1999.00,
-        category: 'Audio',
-        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    {
-        id: 2,
-        name: 'Pro X Superlight Gaming Mouse',
-        price: 159.99,
-        sale_price: null,
-        category: 'Gaming',
-        image: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    {
-        id: 3,
-        name: 'Mechanical Keyboard RGB',
-        price: 129.50,
-        sale_price: 89.99,
-        category: 'Accessories',
-        image: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    },
-    {
-        id: 4,
-        name: 'UltraWide Monitor 34"',
-        price: 499.00,
-        sale_price: 449.00,
-        category: 'Monitors',
-        image: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3'
-    }
-];
+import { supabase } from '../lib/supabaseClient';
 
 const Home = () => {
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchTrendingProducts = async () => {
+            setLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(8);
+
+                if (error) throw error;
+
+                const mappedProducts = (data || []).map(p => ({
+                    ...p,
+                    price: parseFloat(p.price),
+                    sale_price: p.sale_price ? parseFloat(p.sale_price) : null,
+                    image: p.images && p.images.length > 0 ? p.images[0] : p.image_url || 'https://via.placeholder.com/300'
+                }));
+                setProducts(mappedProducts);
+            } catch (err) {
+                console.error('Error fetching trending products:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTrendingProducts();
+    }, []);
+
     return (
         <div className="home-page">
             <Hero />
@@ -56,14 +54,22 @@ const Home = () => {
                 <section className="section">
                     <div className="section-header">
                         <h2 className="section-title">Trending Products</h2>
-                        <a href="/products" className="view-all">View All</a>
+                        {/* href to a general products page if it exists, otherwise just /category/all */}
+                        <a href="/category/all" className="view-all">View All</a>
                     </div>
 
-                    <div className="product-grid">
-                        {SAMPLE_PRODUCTS.map(product => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>Loading trending products...</div>
+                    ) : (
+                        <div className="product-grid">
+                            {products.map(product => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
+                    )}
+                    {!loading && products.length === 0 && (
+                        <div style={{ textAlign: 'center', color: '#888' }}>No products found.</div>
+                    )}
                 </section>
             </div>
 

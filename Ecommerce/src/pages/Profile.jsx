@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { supabase } from '../lib/supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { User, Package, LogOut, MapPin } from 'lucide-react';
 
 const Profile = () => {
@@ -20,7 +20,7 @@ const Profile = () => {
         // In real app: const { data } = await supabase.from('orders').select('*').eq('user_id', user.id);
         setTimeout(() => {
             setOrders([
-                { id: 'ORD-12345', date: '2023-10-15', total: 299.00, status: 'Delivered' },
+                { id: 'ORD-12345', date: '2023-10-15', total: 299.00, status: 'Shipped' },
                 { id: 'ORD-67890', date: '2023-11-02', total: 129.50, status: 'Processing' }
             ]);
             setLoading(false);
@@ -65,7 +65,7 @@ const Profile = () => {
                     ) : (
                         <div className="orders-list">
                             {orders.map(order => (
-                                <div key={order.id} className="order-card">
+                                <Link to={`/order/${order.id}`} key={order.id} className="order-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
                                     <div className="order-header">
                                         <span className="order-id">#{order.id}</span>
                                         <span className={`status-badge ${order.status.toLowerCase()}`}>{order.status}</span>
@@ -74,7 +74,7 @@ const Profile = () => {
                                         <span>{order.date}</span>
                                         <span className="order-total">${order.total.toFixed(2)}</span>
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     )}
@@ -169,6 +169,11 @@ const Profile = () => {
                     padding: 1rem;
                     border-radius: 4px;
                     border: 1px solid #333;
+                    transition: border-color 0.2s;
+                }
+                .order-card:hover {
+                    border-color: var(--primary);
+                    background: #222;
                 }
                 .order-header {
                     display: flex;
@@ -193,6 +198,10 @@ const Profile = () => {
                 .status-badge.processing {
                     background: rgba(50, 87, 167, 0.2);
                     color: #3257A7;
+                }
+                .status-badge.shipped {
+                    background: rgba(252, 136, 1, 0.2);
+                    color: #FC8801;
                 }
                 
                 .order-details {

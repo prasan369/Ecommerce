@@ -32,21 +32,64 @@ const Checkout = () => {
         setStep(2);
     };
 
-    const handlePaymentSubmit = async (e) => {
-        e.preventDefault();
+    const [paymentMethod, setPaymentMethod] = useState('esewa');
+    const [orderId, setOrderId] = useState(null);
+
+    const generateOrderId = () => `ORD-${Math.floor(Math.random() * 1000000)}`;
+
+    const handlePaymentSubmit = async () => {
         setLoading(true);
         setError(null);
 
-        // Simulate Stripe Payment
-        setTimeout(() => {
-            setLoading(false);
-            if (formData.cardNumber === '4242424242424241') {
-                setError('Card declined. Please try again.');
-            } else {
-                setStep(3);
-                clearCart();
+        const newOrderId = generateOrderId();
+        setOrderId(newOrderId);
+
+        try {
+            if (paymentMethod === 'esewa') {
+                // Prepare eSewa Form
+                const amount = total.toFixed(2);
+                const total_amount = amount;
+
+                // Populate hidden form
+                document.getElementById('amount').value = amount;
+                document.getElementById('total_amount').value = total_amount;
+                document.getElementById('transaction_uuid').value = newOrderId;
+                document.getElementById('signature').value = 'dummy_signature_for_test'; // In real app, fetch from backend
+
+                // Submit form
+                document.getElementById('esewa-form').submit();
+
+            } else if (paymentMethod === 'khalti') {
+                const { initiateKhaltiPayment } = await import('../lib/paymentUtils');
+                initiateKhaltiPayment(
+                    total,
+                    newOrderId,
+                    `Order #${newOrderId}`,
+                    (payload) => {
+                        console.log('Success:', payload);
+                        // Success callback
+                        setLoading(false);
+                        setStep(3);
+                        clearCart();
+                    },
+                    (error) => {
+                        console.error('Error:', error);
+                        setLoading(false);
+                        setError('Payment Failed');
+                    }
+                );
+            } else if (paymentMethod === 'cod') {
+                // Simulate API call
+                setTimeout(() => {
+                    setLoading(false);
+                    setStep(3);
+                    clearCart();
+                }, 1000);
             }
-        }, 2000);
+        } catch (err) {
+            setLoading(false);
+            setError(err.message);
+        }
     };
 
     if (cartItems.length === 0 && step !== 3) {
@@ -105,8 +148,8 @@ const Checkout = () => {
                 )}
 
                 {step === 2 && (
-                    <form onSubmit={handlePaymentSubmit} className="checkout-form">
-                        <h2>Payment Details</h2>
+                    <div className="checkout-form">
+                        <h2>Select Payment Method</h2>
                         <div className="order-summary-box">
                             <div className="summary-row">
                                 <span>Total to Pay:</span>
@@ -114,35 +157,50 @@ const Checkout = () => {
                             </div>
                         </div>
 
-                        <div className="form-group">
-                            <label>Name on Card</label>
-                            <input type="text" name="cardName" value={formData.cardName} onChange={handleChange} required />
-                        </div>
-                        <div className="form-group">
-                            <label>Card Number</label>
-                            <div className="input-with-icon">
-                                <CreditCard size={18} className="icon" />
-                                <input type="text" name="cardNumber" value={formData.cardNumber} onChange={handleChange} placeholder="0000 0000 0000 0000" required maxLength="19" />
-                            </div>
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Expiry Date</label>
-                                <input type="text" name="expiry" value={formData.expiry} onChange={handleChange} placeholder="MM/YY" required maxLength="5" />
-                            </div>
-                            <div className="form-group">
-                                <label>CVC</label>
-                                <input type="text" name="cvc" value={formData.cvc} onChange={handleChange} placeholder="123" required maxLength="4" />
-                            </div>
+                        <div className="payment-options">
+                            <label className={`payment-option ${paymentMethod === 'esewa' ? 'selected' : ''}`}>
+                                <input
+                                    type="radio"
+                                    name="payment"
+                                    value="esewa"
+                                    checked={paymentMethod === 'esewa'}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                />
+                                <div className="payment-logo esewa">eSewa</div>
+                            </label>
+
+                            <label className={`payment-option ${paymentMethod === 'khalti' ? 'selected' : ''}`}>
+                                <input
+                                    type="radio"
+                                    name="payment"
+                                    value="khalti"
+                                    checked={paymentMethod === 'khalti'}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                />
+                                <div className="payment-logo khalti">Khalti</div>
+                            </label>
+
+                            <label className={`payment-option ${paymentMethod === 'cod' ? 'selected' : ''}`}>
+                                <input
+                                    type="radio"
+                                    name="payment"
+                                    value="cod"
+                                    checked={paymentMethod === 'cod'}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                />
+                                <div className="payment-logo cod">
+                                    <Truck size={20} /> Cash on Delivery
+                                </div>
+                            </label>
                         </div>
 
                         <div className="payment-actions">
                             <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Back</button>
-                            <button type="submit" className="btn-primary" disabled={loading}>
-                                {loading ? 'Processing...' : `Pay $${total.toFixed(2)}`}
+                            <button className="btn-primary" onClick={handlePaymentSubmit} disabled={loading}>
+                                {loading ? 'Processing...' : `Pay with ${paymentMethod === 'cod' ? 'Cash' : paymentMethod.toUpperCase()}`}
                             </button>
                         </div>
-                    </form>
+                    </div>
                 )}
 
                 {step === 3 && (
@@ -150,11 +208,26 @@ const Checkout = () => {
                         <CheckCircle size={64} color="#3257A7" />
                         <h2>Order Confirmed!</h2>
                         <p>Thank you for your purchase, {formData.name}.</p>
-                        <p>Your order number is #ORD-{Math.floor(Math.random() * 100000)}</p>
+                        <p>Your order number is #{orderId}</p>
+                        <p className="payment-method-badge">Paid via {paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod.toUpperCase()}</p>
                         <button className="btn-primary" onClick={() => navigate('/')}>Continue Shopping</button>
                     </div>
                 )}
             </div>
+            {/* Hidden eSewa Form */}
+            <form id="esewa-form" action="https://rc-epay.esewa.com.np/api/epay/main/v2/form" method="POST" style={{ display: 'none' }}>
+                <input type="text" id="amount" name="amount" required />
+                <input type="text" id="tax_amount" name="tax_amount" value="0" required />
+                <input type="text" id="total_amount" name="total_amount" required />
+                <input type="text" id="transaction_uuid" name="transaction_uuid" required />
+                <input type="text" id="product_code" name="product_code" value="EPAYTEST" required />
+                <input type="text" id="product_service_charge" name="product_service_charge" value="0" required />
+                <input type="text" id="product_delivery_charge" name="product_delivery_charge" value="0" required />
+                <input type="text" id="success_url" name="success_url" value={`${window.location.origin}/order/success`} required />
+                <input type="text" id="failure_url" name="failure_url" value={`${window.location.origin}/checkout`} required />
+                <input type="text" id="signed_field_names" name="signed_field_names" value="total_amount,transaction_uuid,product_code" required />
+                <input type="text" id="signature" name="signature" required />
+            </form>
 
             <style>{`
                 .checkout-page {
@@ -308,6 +381,43 @@ const Checkout = () => {
                     margin-bottom: 2rem;
                 }
 
+                .payment-options {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                    gap: 1rem;
+                    margin-bottom: 2rem;
+                }
+                .payment-option {
+                    cursor: pointer;
+                    position: relative;
+                }
+                .payment-option input {
+                    position: absolute;
+                    opacity: 0;
+                }
+                .payment-logo {
+                    border: 2px solid #333;
+                    border-radius: var(--radius);
+                    padding: 1.5rem;
+                    text-align: center;
+                    font-weight: 700;
+                    transition: all 0.2s;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    background: #1a1a1a;
+                    height: 100px;
+                }
+                .payment-option.selected .payment-logo {
+                    border-color: var(--primary);
+                    background: rgba(252, 136, 1, 0.1);
+                }
+                .esewa { color: #60bb46; }
+                .khalti { color: #5c2d91; }
+                .cod { color: var(--text-main); }
+                
                 .error-message {
                     background: rgba(217, 37, 10, 0.1);
                     color: var(--alert);
