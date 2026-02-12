@@ -9,20 +9,43 @@ const Cart = () => {
     if (cartItems.length === 0) {
         return (
             <div className="empty-cart container">
-                <ShoppingBag size={64} style={{ color: '#333', marginBottom: '1rem' }} />
+                <div className="empty-icon-wrap">
+                    <ShoppingBag size={48} />
+                </div>
                 <h2>Your cart is empty</h2>
                 <p>Looks like you haven't added anything yet.</p>
-                <Link to="/" className="btn btn-primary" style={{ marginTop: '1rem' }}>Start Shopping</Link>
+                <Link to="/" className="btn-primary" style={{ marginTop: '1rem', textDecoration: 'none' }}>Start Shopping</Link>
 
                 <style>{`
             .empty-cart {
                text-align: center;
-               padding: 4rem 1rem;
+               padding: 6rem 1rem;
                display: flex;
                flex-direction: column;
                align-items: center;
                justify-content: center;
-               min-height: 50vh;
+               min-height: 60vh;
+            }
+            .empty-icon-wrap {
+               width: 80px;
+               height: 80px;
+               border-radius: 50%;
+               background: rgba(255, 255, 255, 0.03);
+               border: 1px solid var(--border);
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               color: rgba(255, 255, 255, 0.2);
+               margin-bottom: 1.5rem;
+            }
+            .empty-cart h2 {
+               font-weight: 700;
+               font-size: 1.5rem;
+               margin: 0 0 0.5rem;
+            }
+            .empty-cart p {
+               color: rgba(255, 255, 255, 0.4);
+               margin: 0;
             }
           `}</style>
             </div>
@@ -46,12 +69,12 @@ const Cart = () => {
 
                                 <div className="item-actions">
                                     <div className="qty-control">
-                                        <button onClick={() => updateQuantity(item.id, -1)}>-</button>
+                                        <button onClick={() => updateQuantity(item.id, -1)}>−</button>
                                         <span>{item.quantity}</span>
                                         <button onClick={() => updateQuantity(item.id, 1)}>+</button>
                                     </div>
                                     <button className="remove-btn" onClick={() => removeFromCart(item.id)}>
-                                        <Trash2 size={18} />
+                                        <Trash2 size={16} />
                                     </button>
                                 </div>
                             </div>
@@ -70,13 +93,14 @@ const Cart = () => {
                     </div>
                     <div className="summary-row">
                         <span>Shipping</span>
-                        <span>Free</span>
+                        <span className="free-tag">Free</span>
                     </div>
+                    <div className="summary-divider" />
                     <div className="summary-row total">
                         <span>Total</span>
                         <span>${total.toFixed(2)}</span>
                     </div>
-                    <Link to="/checkout" className="checkout-btn" style={{ textAlign: 'center', display: 'block', textDecoration: 'none' }}>
+                    <Link to="/checkout" className="checkout-btn">
                         Proceed to Checkout
                     </Link>
                 </div>
@@ -89,8 +113,9 @@ const Cart = () => {
          }
          .cart-layout {
             display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 3rem;
+            grid-template-columns: 1fr 380px;
+            gap: 2rem;
+            align-items: flex-start;
          }
          @media (max-width: 900px) {
             .cart-layout {
@@ -101,23 +126,28 @@ const Cart = () => {
          .cart-items {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
          }
          .cart-item {
-            background-color: #1a1a1a;
-            border: 1px solid #333;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 1rem;
+            padding: 1.25rem;
             display: flex;
-            gap: 1.5rem;
+            gap: 1.25rem;
             align-items: center;
+            transition: border-color 0.3s ease;
+         }
+         .cart-item:hover {
+            border-color: rgba(255, 255, 255, 0.12);
          }
          .item-image {
-             width: 100px;
-             height: 100px;
-             background: #000;
-             border-radius: 4px;
+             width: 90px;
+             height: 90px;
+             background: #0a0a0f;
+             border-radius: 6px;
              overflow: hidden;
+             flex-shrink: 0;
          }
          .item-image img {
              width: 100%;
@@ -128,93 +158,126 @@ const Cart = () => {
              flex: 1;
          }
          .item-details h3 {
-             margin: 0 0 0.5rem 0;
-             font-size: 1.1rem;
+             margin: 0 0 0.35rem 0;
+             font-size: 1rem;
+             font-weight: 600;
          }
          .item-price {
              color: var(--primary);
              font-weight: 600;
-             margin-bottom: 1rem;
+             margin: 0 0 0.75rem 0;
+             font-size: 0.95rem;
          }
          
          .item-actions {
              display: flex;
              align-items: center;
-             gap: 1rem;
+             gap: 0.75rem;
          }
          .qty-control {
              display: flex;
              align-items: center;
-             border: 1px solid #444;
-             border-radius: 4px;
+             border: 1px solid var(--border);
+             border-radius: 6px;
+             overflow: hidden;
          }
          .qty-control button {
-             width: 30px;
-             height: 30px;
-             background: #222;
-             color: #fff;
+             width: 32px;
+             height: 32px;
+             background: rgba(255, 255, 255, 0.04);
+             color: rgba(255, 255, 255, 0.7);
              display: flex;
              align-items: center;
              justify-content: center;
+             font-size: 1rem;
+             transition: all 0.2s ease;
+         }
+         .qty-control button:hover {
+             background: rgba(0, 229, 255, 0.08);
+             color: var(--primary);
          }
          .qty-control span {
-             width: 30px;
+             width: 36px;
              text-align: center;
              font-weight: 600;
+             font-size: 0.9rem;
+             font-variant-numeric: tabular-nums;
          }
          .remove-btn {
              background: none;
-             color: var(--alert);
-             padding: 0.5rem;
-             border-radius: 4px;
+             color: rgba(255, 255, 255, 0.3);
+             padding: 0.4rem;
+             border-radius: 6px;
+             display: flex;
+             align-items: center;
+             transition: all 0.2s ease;
          }
          .remove-btn:hover {
-             background: rgba(217, 37, 10, 0.1);
+             background: rgba(255, 59, 48, 0.1);
+             color: #ff3b30;
          }
          
          .item-subtotal {
              font-weight: 700;
-             font-size: 1.2rem;
-             min-width: 100px;
+             font-size: 1.1rem;
+             min-width: 90px;
              text-align: right;
+             font-variant-numeric: tabular-nums;
          }
 
          .cart-summary {
-             background: #111;
-             padding: 1.5rem;
+             background: rgba(255, 255, 255, 0.02);
+             padding: 2rem;
              border-radius: var(--radius);
-             border: 1px solid #222;
-             height: fit-content;
+             border: 1px solid var(--border);
+             position: sticky;
+             top: 100px;
          }
          .cart-summary h2 {
-             margin-top: 0;
-             margin-bottom: 1.5rem;
-             font-size: 1.5rem;
+             margin: 0 0 1.5rem;
+             font-size: 1.25rem;
+             font-weight: 700;
          }
          .summary-row {
              display: flex;
              justify-content: space-between;
-             margin-bottom: 1rem;
-             color: var(--text-muted);
+             margin-bottom: 0.75rem;
+             color: rgba(255, 255, 255, 0.45);
+             font-size: 0.9rem;
+         }
+         .free-tag {
+             color: var(--primary);
+             font-weight: 500;
+         }
+         .summary-divider {
+             height: 1px;
+             background: var(--border);
+             margin: 1rem 0;
          }
          .summary-row.total {
-             color: var(--text-main);
+             color: #fff;
              font-weight: 800;
-             font-size: 1.5rem;
-             border-top: 1px solid #333;
-             padding-top: 1rem;
+             font-size: 1.35rem;
              margin-bottom: 1.5rem;
          }
          .checkout-btn {
-             background-color: var(--primary);
-             color: #fff;
+             background: var(--primary);
+             color: var(--background);
              width: 100%;
              padding: 1rem;
              font-weight: 700;
+             font-size: 0.9rem;
              border-radius: var(--radius);
+             text-align: center;
+             display: block;
+             text-decoration: none;
+             transition: all 0.3s ease;
+             letter-spacing: 0.3px;
          }
          .checkout-btn:hover {
-             background-color: var(--primary-hover);
+             box-shadow: 0 8px 24px rgba(0, 229, 255, 0.3);
+             transform: translateY(-1px);
+             color: var(--background);
          }
       `}</style>
         </div>

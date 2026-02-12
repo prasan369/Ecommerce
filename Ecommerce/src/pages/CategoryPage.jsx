@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { SlidersHorizontal } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 
 const CategoryPage = () => {
-    const { id } = useParams(); // category slug from url
+    const { id } = useParams();
+    const [searchParams] = useSearchParams();
+    const searchQuery = searchParams.get('search') || '';
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState('relevance');
@@ -18,10 +20,11 @@ const CategoryPage = () => {
                 let query = supabase.from('products').select('*');
                 let catName = 'All Products';
 
-                if (id && id.toLowerCase() !== 'all') {
-                    // Fetch category ID by slug (case-insensitive search if possible, or assume exact match)
-                    // We'll normalize to lowercase for slug comparison if your slugs are lowercase
-                    const { data: catData, error: catError } = await supabase
+                if (searchQuery) {
+                    query = query.ilike('name', `%${searchQuery}%`);
+                    catName = `Search: "${searchQuery}"`;
+                } else if (id && id.toLowerCase() !== 'all') {
+                    const { data: catData } = await supabase
                         .from('categories')
                         .select('id, name')
                         .ilike('slug', id)
@@ -31,9 +34,6 @@ const CategoryPage = () => {
                         query = query.eq('category_id', catData.id);
                         catName = catData.name;
                     } else {
-                        // Fallback or empty if category doesn't exist
-                        // For now, if category not found, we might show empty or all? 
-                        // Let's filter by a non-existent ID to show empty
                         console.warn('Category not found:', id);
                         query = query.eq('category_id', -1);
                         catName = id.charAt(0).toUpperCase() + id.slice(1);
@@ -41,11 +41,8 @@ const CategoryPage = () => {
                 }
 
                 const { data, error } = await query;
-
                 if (error) throw error;
 
-                // Map DB fields to Component expectations if necessary
-                // DB: stock_quantity, images[]. Component: stock, image (single)
                 const mappedProducts = (data || []).map(p => ({
                     ...p,
                     price: parseFloat(p.price),
@@ -55,7 +52,6 @@ const CategoryPage = () => {
 
                 setProducts(mappedProducts);
                 setDisplayedCategoryName(catName);
-
             } catch (err) {
                 console.error('Error fetching data:', err);
             } finally {
@@ -64,9 +60,8 @@ const CategoryPage = () => {
         };
 
         fetchData();
-    }, [id]);
+    }, [id, searchQuery]);
 
-    // Sorting Logic
     const sortedProducts = React.useMemo(() => {
         let sorted = [...products];
         if (sortBy === 'price-low') {
@@ -82,7 +77,10 @@ const CategoryPage = () => {
     return (
         <div className="category-page container">
             <div className="page-header">
-                <h1 className="page-title">{displayedCategoryName}</h1>
+                <div>
+                    <span className="page-label">CATEGORY</span>
+                    <h1 className="page-title">{displayedCategoryName}</h1>
+                </div>
                 <div className="breadcrumb">Home / Categories / {displayedCategoryName}</div>
             </div>
 
@@ -90,14 +88,14 @@ const CategoryPage = () => {
                 {/* Sidebar Filters */}
                 <aside className="filters-sidebar">
                     <div className="filter-group">
-                        <h3><SlidersHorizontal size={18} /> Filters</h3>
+                        <h3><SlidersHorizontal size={16} /> Filters</h3>
                     </div>
 
                     <div className="filter-group">
                         <h4>Price Range</h4>
                         <div className="price-inputs">
                             <input type="number" placeholder="Min" />
-                            <span>-</span>
+                            <span>—</span>
                             <input type="number" placeholder="Max" />
                         </div>
                     </div>
@@ -116,9 +114,9 @@ const CategoryPage = () => {
                 {/* Product Grid */}
                 <main className="product-listing">
                     <div className="listing-header">
-                        <span>Showing {sortedProducts.length} results</span>
+                        <span className="results-count">{sortedProducts.length} results</span>
                         <div className="sort-wrapper">
-                            <label>Sort by:</label>
+                            <label>Sort:</label>
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                                 <option value="relevance">Relevance</option>
                                 <option value="price-low">Price: Low to High</option>
@@ -129,7 +127,10 @@ const CategoryPage = () => {
                     </div>
 
                     {loading ? (
-                        <div className="loading-state">Loading products...</div>
+                        <div className="loading-state">
+                            <div className="loading-spinner" />
+                            <span>Loading products...</span>
+                        </div>
                     ) : sortedProducts.length > 0 ? (
                         <div className="products-grid">
                             {sortedProducts.map(p => (
@@ -150,21 +151,35 @@ const CategoryPage = () => {
            padding-bottom: 4rem;
         }
         .page-header {
-           margin-bottom: 2rem;
-           border-bottom: 1px solid #222;
-           padding-bottom: 1rem;
+           margin-bottom: 2.5rem;
+           border-bottom: 1px solid var(--border);
+           padding-bottom: 1.25rem;
+           display: flex;
+           justify-content: space-between;
+           align-items: flex-end;
+        }
+        .page-label {
+           font-size: 0.7rem;
+           font-weight: 600;
+           letter-spacing: 2px;
+           color: var(--primary);
+           display: block;
+           margin-bottom: 0.35rem;
         }
         .page-title {
-           margin: 0 0 0.5rem 0;
-           font-size: 2.5rem;
+           margin: 0;
+           font-size: clamp(1.75rem, 4vw, 2.5rem);
+           font-weight: 800;
+           letter-spacing: -0.02em;
         }
         .breadcrumb {
-           color: var(--text-muted);
+           color: rgba(255, 255, 255, 0.3);
+           font-size: 0.8rem;
         }
         
         .content-layout {
            display: grid;
-           grid-template-columns: 250px 1fr;
+           grid-template-columns: 240px 1fr;
            gap: 2rem;
         }
         @media (max-width: 768px) {
@@ -172,49 +187,74 @@ const CategoryPage = () => {
               grid-template-columns: 1fr;
            }
            .filters-sidebar {
-              display: none; /* Hide filters on mobile for now */
+              display: none;
            }
         }
 
         .filters-sidebar {
-           background: #111;
+           background: rgba(255, 255, 255, 0.02);
            padding: 1.5rem;
            border-radius: var(--radius);
            height: fit-content;
-           border: 1px solid #222;
+           border: 1px solid var(--border);
+           position: sticky;
+           top: 80px;
         }
         .filter-group {
-           margin-bottom: 2rem;
+           margin-bottom: 1.75rem;
+        }
+        .filter-group:last-child {
+           margin-bottom: 0;
         }
         .filter-group h3 {
            display: flex;
            align-items: center;
            gap: 0.5rem;
-           margin-top: 0;
+           margin: 0 0 1rem;
+           font-size: 0.9rem;
+           font-weight: 700;
         }
         .filter-group h4 {
-           margin-bottom: 1rem;
-           font-size: 1rem;
+           margin: 0 0 0.75rem;
+           font-size: 0.75rem;
+           font-weight: 600;
+           letter-spacing: 1px;
+           text-transform: uppercase;
+           color: rgba(255, 255, 255, 0.5);
         }
         .price-inputs {
            display: flex;
            align-items: center;
            gap: 0.5rem;
         }
+        .price-inputs span {
+           color: rgba(255, 255, 255, 0.2);
+        }
         .price-inputs input {
            width: 100%;
-           padding: 0.5rem;
-           background: #222;
-           border: 1px solid #333;
+           padding: 0.5rem 0.6rem;
+           background: rgba(255, 255, 255, 0.04);
+           border: 1px solid var(--border);
            color: #fff;
-           border-radius: 4px;
+           border-radius: 6px;
+           font-size: 0.85rem;
+           font-family: inherit;
+        }
+        .price-inputs input:focus {
+           outline: none;
+           border-color: var(--border-hover);
         }
         .checkbox-label {
            display: flex;
            align-items: center;
            gap: 0.5rem;
-           margin-bottom: 0.5rem;
+           margin-bottom: 0.6rem;
            cursor: pointer;
+           color: rgba(255, 255, 255, 0.6);
+           font-size: 0.875rem;
+        }
+        .checkbox-label input[type="checkbox"] {
+           accent-color: var(--primary);
         }
 
         .listing-header {
@@ -222,35 +262,63 @@ const CategoryPage = () => {
            justify-content: space-between;
            align-items: center;
            margin-bottom: 1.5rem;
-           background: #111;
-           padding: 1rem;
+           background: rgba(255, 255, 255, 0.02);
+           padding: 0.85rem 1.25rem;
            border-radius: var(--radius);
-           border: 1px solid #222;
+           border: 1px solid var(--border);
+        }
+        .results-count {
+           font-size: 0.85rem;
+           color: rgba(255, 255, 255, 0.4);
         }
         .sort-wrapper {
            display: flex;
            align-items: center;
            gap: 0.5rem;
+           font-size: 0.85rem;
+           color: rgba(255, 255, 255, 0.5);
         }
         .sort-wrapper select {
-           background: #222;
+           background: rgba(255, 255, 255, 0.04);
            color: #fff;
-           border: 1px solid #333;
-           padding: 0.5rem;
-           border-radius: 4px;
+           border: 1px solid var(--border);
+           padding: 0.4rem 0.6rem;
+           border-radius: 6px;
+           font-family: inherit;
+           font-size: 0.85rem;
+        }
+        .sort-wrapper select:focus {
+           outline: none;
+           border-color: var(--border-hover);
         }
 
         .products-grid {
            display: grid;
-           grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-           gap: 2rem;
+           grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+           gap: 1.5rem;
         }
         .no-results, .loading-state {
            text-align: center;
-           padding: 3rem;
-           background: #111;
+           padding: 4rem 2rem;
+           background: rgba(255, 255, 255, 0.02);
            border-radius: var(--radius);
-           color: var(--text-muted);
+           color: rgba(255, 255, 255, 0.35);
+           border: 1px solid var(--border);
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           gap: 1rem;
+        }
+        .loading-spinner {
+           width: 28px;
+           height: 28px;
+           border: 2px solid var(--border);
+           border-top-color: var(--primary);
+           border-radius: 50%;
+           animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+           to { transform: rotate(360deg); }
         }
       `}</style>
         </div>

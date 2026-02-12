@@ -14,11 +14,11 @@ const ProductCard = ({ product }) => {
             <img src={image || 'https://via.placeholder.com/300'} alt={name} className="product-image" />
             {isSale && <span className="sale-badge">SALE</span>}
             <button className="wishlist-btn">
-               <Heart size={20} />
+               <Heart size={18} />
             </button>
             <div className="quick-actions">
                <button className="quick-add-btn" onClick={() => addToCart(product)}>
-                  <ShoppingCart size={18} /> Add to Cart
+                  <ShoppingCart size={16} /> Add to Cart
                </button>
             </div>
          </div>
@@ -42,114 +42,125 @@ const ProductCard = ({ product }) => {
 
          <style>{`
         .product-card {
-           background-color: var(--surface-dark);
-           border: 1px solid #222;
+           background: rgba(255, 255, 255, 0.02);
+           border: 1px solid var(--border);
            border-radius: var(--radius);
            overflow: hidden;
-           transition: transform 0.3s ease, box-shadow 0.3s ease;
+           transition: all 0.4s ease;
            position: relative;
         }
         .product-card:hover {
-           transform: translateY(-5px);
-           box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-           border-color: var(--primary);
+           transform: translateY(-4px);
+           box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 229, 255, 0.15);
+           border-color: var(--border-hover);
         }
         
         .card-image-wrapper {
            position: relative;
-           height: 200px;
-           background-color: #1a1a1a;
+           height: 220px;
+           background: #0a0a0f;
            overflow: hidden;
         }
         .product-image {
            width: 100%;
            height: 100%;
            object-fit: cover;
-           transition: transform 0.5s ease;
+           transition: transform 0.6s ease;
         }
         .product-card:hover .product-image {
-           transform: scale(1.05);
+           transform: scale(1.08);
         }
 
         .sale-badge {
            position: absolute;
-           top: 10px;
-           left: 10px;
-           background-color: var(--alert);
-           color: #fff;
-           padding: 2px 8px;
-           font-size: 0.75rem;
+           top: 12px;
+           left: 12px;
+           background: var(--primary);
+           color: var(--background);
+           padding: 3px 10px;
+           font-size: 0.65rem;
            font-weight: 700;
-           border-radius: 4px;
+           letter-spacing: 1px;
+           border-radius: 3px;
         }
 
         .wishlist-btn {
            position: absolute;
-           top: 10px;
-           right: 10px;
-           background: rgba(0,0,0,0.5);
-           color: #fff;
+           top: 12px;
+           right: 12px;
+           background: rgba(5, 5, 8, 0.6);
+           backdrop-filter: blur(8px);
+           color: rgba(255, 255, 255, 0.6);
            border-radius: 50%;
-           width: 32px;
-           height: 32px;
+           width: 34px;
+           height: 34px;
            display: flex;
            align-items: center;
            justify-content: center;
            padding: 0;
-           transition: background 0.3s;
+           transition: all 0.3s ease;
+           border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .wishlist-btn:hover {
-           background: var(--primary);
+           background: rgba(0, 229, 255, 0.15);
+           color: var(--primary);
+           border-color: var(--border-hover);
         }
 
         .quick-actions {
            position: absolute;
-           bottom: -50px; /* Hidden initially */
+           bottom: -50px;
            left: 0;
            right: 0;
-           padding: 10px;
-           background: rgba(0,0,0,0.8);
+           padding: 12px;
+           background: linear-gradient(transparent, rgba(5, 5, 8, 0.95));
            display: flex;
            justify-content: center;
-           transition: bottom 0.3s ease;
+           transition: bottom 0.4s ease;
         }
         .product-card:hover .quick-actions {
            bottom: 0;
         }
 
         .quick-add-btn {
-           background-color: var(--primary);
-           color: #fff;
+           background: var(--primary);
+           color: var(--background);
            width: 100%;
-           padding: 0.5rem;
-           border-radius: 4px;
+           padding: 0.6rem;
+           border-radius: 6px;
            display: flex;
            align-items: center;
            justify-content: center;
            gap: 0.5rem;
            font-weight: 600;
+           font-size: 0.8rem;
+           letter-spacing: 0.3px;
+           transition: all 0.3s ease;
         }
         .quick-add-btn:hover {
-           background-color: var(--primary-hover);
+           box-shadow: 0 4px 16px rgba(0, 229, 255, 0.3);
         }
 
         .card-details {
-           padding: 1rem;
+           padding: 1rem 1.15rem;
         }
         .category-label {
-           color: var(--text-muted);
-           font-size: 0.8rem;
+           color: rgba(255, 255, 255, 0.35);
+           font-size: 0.7rem;
            text-transform: uppercase;
-           letter-spacing: 0.5px;
+           letter-spacing: 1px;
+           font-weight: 500;
         }
         .product-name {
            margin: 0.5rem 0;
-           font-size: 1rem;
+           font-size: 0.95rem;
+           font-weight: 600;
            line-height: 1.4;
         }
         .product-name a {
-           color: var(--text-main);
+           color: #fff;
            transition: color 0.2s;
+           text-decoration: none;
         }
         .product-name a:hover {
            color: var(--primary);
@@ -165,9 +176,9 @@ const ProductCard = ({ product }) => {
            font-size: 1.1rem;
         }
         .old-price {
-           color: var(--text-muted);
+           color: rgba(255, 255, 255, 0.3);
            text-decoration: line-through;
-           font-size: 0.9rem;
+           font-size: 0.85rem;
         }
       `}</style>
       </div>

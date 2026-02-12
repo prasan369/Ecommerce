@@ -47,19 +47,34 @@ const Home = () => {
                 <DailyDeals />
 
                 <section className="section">
-                    <h2 className="section-title">Shop by Category</h2>
+                    <div className="section-header">
+                        <div className="section-title-group">
+                            <span className="section-label">EXPLORE</span>
+                            <h2 className="section-title">Shop by Category</h2>
+                        </div>
+                    </div>
                     <CategoryGrid />
                 </section>
 
                 <section className="section">
                     <div className="section-header">
-                        <h2 className="section-title">Trending Products</h2>
-                        {/* href to a general products page if it exists, otherwise just /category/all */}
-                        <a href="/category/all" className="view-all">View All</a>
+                        <div className="section-title-group">
+                            <span className="section-label">NEW ARRIVALS</span>
+                            <h2 className="section-title">Trending Products</h2>
+                        </div>
+                        <a href="/category/all" className="view-all">
+                            View All
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                                <path d="M4 10h12m-6-6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                        </a>
                     </div>
 
                     {loading ? (
-                        <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>Loading trending products...</div>
+                        <div className="loading-state">
+                            <div className="loading-spinner" />
+                            <span>Loading products...</span>
+                        </div>
                     ) : (
                         <div className="product-grid">
                             {products.map(product => (
@@ -68,7 +83,7 @@ const Home = () => {
                         </div>
                     )}
                     {!loading && products.length === 0 && (
-                        <div style={{ textAlign: 'center', color: '#888' }}>No products found.</div>
+                        <div className="empty-state">No products found.</div>
                     )}
                 </section>
             </div>
@@ -76,36 +91,87 @@ const Home = () => {
             <Footer />
 
             <style>{`
+        .home-page {
+            background: var(--background);
+        }
         .section {
-            margin-bottom: 4rem;
+            margin-bottom: 5rem;
         }
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #222;
-            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: var(--primary);
         }
         .section-title {
-            font-size: 2rem;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 800;
             margin: 0;
-            color: var(--text-main);
-            border-left: 4px solid var(--primary);
-            padding-left: 1rem;
+            letter-spacing: -0.02em;
         }
         .view-all {
-            color: var(--primary);
-            font-weight: 600;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
         .view-all:hover {
-            color: var(--primary-hover);
-            text-decoration: underline;
+            color: var(--primary);
+        }
+        .view-all:hover svg {
+            transform: translateX(3px);
+        }
+        .view-all svg {
+            transition: transform 0.3s ease;
         }
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.5rem;
+        }
+        .loading-state {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: rgba(255, 255, 255, 0.35);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        .loading-spinner {
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            padding: 3rem;
+            font-size: 0.9rem;
         }
       `}</style>
         </div>

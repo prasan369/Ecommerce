@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Truck, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const Checkout = () => {
     const { cartItems, total, clearCart } = useCart();
     const navigate = useNavigate();
 
-    const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Success
+    const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -17,10 +17,6 @@ const Checkout = () => {
         address: '',
         city: '',
         zip: '',
-        cardName: '',
-        cardNumber: '',
-        expiry: '',
-        cvc: ''
     });
 
     const handleChange = (e) => {
@@ -46,17 +42,14 @@ const Checkout = () => {
 
         try {
             if (paymentMethod === 'esewa') {
-                // Prepare eSewa Form
                 const amount = total.toFixed(2);
                 const total_amount = amount;
 
-                // Populate hidden form
                 document.getElementById('amount').value = amount;
                 document.getElementById('total_amount').value = total_amount;
                 document.getElementById('transaction_uuid').value = newOrderId;
-                document.getElementById('signature').value = 'dummy_signature_for_test'; // In real app, fetch from backend
+                document.getElementById('signature').value = 'dummy_signature_for_test';
 
-                // Submit form
                 document.getElementById('esewa-form').submit();
 
             } else if (paymentMethod === 'khalti') {
@@ -67,7 +60,6 @@ const Checkout = () => {
                     `Order #${newOrderId}`,
                     (payload) => {
                         console.log('Success:', payload);
-                        // Success callback
                         setLoading(false);
                         setStep(3);
                         clearCart();
@@ -79,7 +71,6 @@ const Checkout = () => {
                     }
                 );
             } else if (paymentMethod === 'cod') {
-                // Simulate API call
                 setTimeout(() => {
                     setLoading(false);
                     setStep(3);
@@ -94,7 +85,7 @@ const Checkout = () => {
 
     if (cartItems.length === 0 && step !== 3) {
         return (
-            <div className="container" style={{ padding: '4rem', textAlign: 'center' }}>
+            <div className="container" style={{ padding: '4rem', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
                 <h2>Your cart is empty. Redirecting...</h2>
                 {setTimeout(() => navigate('/'), 2000) && null}
             </div>
@@ -105,16 +96,22 @@ const Checkout = () => {
         <div className="checkout-page container">
             <div className="checkout-container">
                 <div className="checkout-steps">
-                    <div className={`step-indicator ${step >= 1 ? 'active' : ''}`}>1. Shipping</div>
-                    <div className="step-line"></div>
-                    <div className={`step-indicator ${step >= 2 ? 'active' : ''}`}>2. Payment</div>
-                    <div className="step-line"></div>
-                    <div className={`step-indicator ${step >= 3 ? 'active' : ''}`}>3. Confirm</div>
+                    <div className={`step-indicator ${step >= 1 ? 'active' : ''}`}>
+                        <span className="step-num">1</span> Shipping
+                    </div>
+                    <div className={`step-line ${step >= 2 ? 'filled' : ''}`} />
+                    <div className={`step-indicator ${step >= 2 ? 'active' : ''}`}>
+                        <span className="step-num">2</span> Payment
+                    </div>
+                    <div className={`step-line ${step >= 3 ? 'filled' : ''}`} />
+                    <div className={`step-indicator ${step >= 3 ? 'active' : ''}`}>
+                        <span className="step-num">3</span> Confirm
+                    </div>
                 </div>
 
                 {error && (
                     <div className="error-message">
-                        <AlertTriangle size={18} /> {error}
+                        <AlertTriangle size={16} /> {error}
                     </div>
                 )}
 
@@ -143,7 +140,7 @@ const Checkout = () => {
                                 <input type="text" name="zip" value={formData.zip} onChange={handleChange} required />
                             </div>
                         </div>
-                        <button type="submit" className="btn-primary">Continue to Payment</button>
+                        <button type="submit" className="checkout-btn-primary">Continue to Payment</button>
                     </form>
                 )}
 
@@ -195,8 +192,8 @@ const Checkout = () => {
                         </div>
 
                         <div className="payment-actions">
-                            <button type="button" className="btn-secondary" onClick={() => setStep(1)}>Back</button>
-                            <button className="btn-primary" onClick={handlePaymentSubmit} disabled={loading}>
+                            <button type="button" className="checkout-btn-secondary" onClick={() => setStep(1)}>Back</button>
+                            <button className="checkout-btn-primary" onClick={handlePaymentSubmit} disabled={loading}>
                                 {loading ? 'Processing...' : `Pay with ${paymentMethod === 'cod' ? 'Cash' : paymentMethod.toUpperCase()}`}
                             </button>
                         </div>
@@ -205,12 +202,16 @@ const Checkout = () => {
 
                 {step === 3 && (
                     <div className="success-message">
-                        <CheckCircle size={64} color="#3257A7" />
+                        <div className="success-icon">
+                            <CheckCircle size={48} />
+                        </div>
                         <h2>Order Confirmed!</h2>
                         <p>Thank you for your purchase, {formData.name}.</p>
-                        <p>Your order number is #{orderId}</p>
-                        <p className="payment-method-badge">Paid via {paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod.toUpperCase()}</p>
-                        <button className="btn-primary" onClick={() => navigate('/')}>Continue Shopping</button>
+                        <p className="order-num">Order #{orderId}</p>
+                        <span className="payment-method-badge">
+                            Paid via {paymentMethod === 'cod' ? 'Cash on Delivery' : paymentMethod.toUpperCase()}
+                        </span>
+                        <button className="checkout-btn-primary" onClick={() => navigate('/')}>Continue Shopping</button>
                     </div>
                 )}
             </div>
@@ -245,52 +246,87 @@ const Checkout = () => {
                     margin-bottom: 3rem;
                 }
                 .step-indicator {
-                    color: var(--text-muted);
+                    color: rgba(255, 255, 255, 0.25);
                     font-weight: 500;
+                    font-size: 0.85rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    transition: color 0.3s ease;
+                }
+                .step-num {
+                    width: 26px;
+                    height: 26px;
+                    border-radius: 50%;
+                    border: 1px solid var(--border);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                    transition: all 0.3s ease;
                 }
                 .step-indicator.active {
                     color: var(--primary);
-                    font-weight: 700;
+                }
+                .step-indicator.active .step-num {
+                    border-color: var(--primary);
+                    background: rgba(0, 229, 255, 0.1);
+                    color: var(--primary);
                 }
                 .step-line {
                     flex: 1;
                     height: 1px;
-                    background: #333;
-                    margin: 0 1rem;
+                    background: var(--border);
+                    margin: 0 0.75rem;
+                    transition: background 0.3s ease;
+                }
+                .step-line.filled {
+                    background: rgba(0, 229, 255, 0.3);
                 }
 
                 .checkout-form {
-                    background: #111;
+                    background: rgba(255, 255, 255, 0.02);
                     padding: 2rem;
                     border-radius: var(--radius);
-                    border: 1px solid #222;
+                    border: 1px solid var(--border);
                 }
                 .checkout-form h2 {
-                    margin-top: 0;
-                    margin-bottom: 1.5rem;
+                    margin: 0 0 1.5rem;
+                    font-size: 1.25rem;
+                    font-weight: 700;
                 }
 
                 .form-group {
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 1.25rem;
                 }
                 .form-group label {
                     display: block;
-                    margin-bottom: 0.5rem;
-                    color: var(--text-muted);
-                    font-size: 0.9rem;
+                    margin-bottom: 0.4rem;
+                    color: rgba(255, 255, 255, 0.5);
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    letter-spacing: 0.3px;
                 }
                 .form-group input {
                     width: 100%;
                     padding: 0.75rem;
-                    background: #222;
-                    border: 1px solid #333;
-                    border-radius: 4px;
+                    background: rgba(255, 255, 255, 0.04);
+                    border: 1px solid var(--border);
+                    border-radius: 8px;
                     color: #fff;
-                    font-size: 1rem;
+                    font-size: 0.9rem;
+                    font-family: inherit;
+                    transition: all 0.3s ease;
+                }
+                .form-group input::placeholder {
+                    color: rgba(255, 255, 255, 0.2);
                 }
                 .form-group input:focus {
-                    border-color: var(--primary);
+                    border-color: var(--border-hover);
                     outline: none;
+                    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.08);
+                    background: rgba(255, 255, 255, 0.06);
                 }
 
                 .form-row {
@@ -299,33 +335,43 @@ const Checkout = () => {
                     gap: 1rem;
                 }
 
-                .btn-primary, .btn-secondary {
+                .checkout-btn-primary {
                     width: 100%;
-                    padding: 0.8rem;
+                    padding: 0.85rem;
                     border-radius: var(--radius);
                     font-weight: 600;
-                    font-size: 1rem;
-                    margin-top: 1rem;
+                    font-size: 0.9rem;
+                    margin-top: 0.75rem;
+                    background: var(--primary);
+                    color: var(--background);
+                    transition: all 0.3s ease;
+                    letter-spacing: 0.3px;
+                    border: none;
                 }
-                .btn-primary {
-                    background-color: var(--primary);
-                    color: #fff;
+                .checkout-btn-primary:hover:not(:disabled) {
+                    box-shadow: 0 8px 24px rgba(0, 229, 255, 0.3);
+                    transform: translateY(-1px);
                 }
-                .btn-primary:hover:not(:disabled) {
-                    background-color: var(--primary-hover);
-                }
-                .btn-primary:disabled {
-                    opacity: 0.7;
+                .checkout-btn-primary:disabled {
+                    opacity: 0.6;
                     cursor: not-allowed;
                 }
                 
-                .btn-secondary {
-                    background-color: transparent;
-                    border: 1px solid #333;
-                    color: var(--text-muted);
+                .checkout-btn-secondary {
+                    width: 100%;
+                    padding: 0.85rem;
+                    border-radius: var(--radius);
+                    font-weight: 500;
+                    font-size: 0.9rem;
+                    margin-top: 0.75rem;
+                    background: transparent;
+                    border: 1px solid var(--border);
+                    color: rgba(255, 255, 255, 0.6);
+                    transition: all 0.3s ease;
+                    font-family: inherit;
                 }
-                .btn-secondary:hover {
-                    border-color: #555;
+                .checkout-btn-secondary:hover {
+                    border-color: rgba(255, 255, 255, 0.15);
                     color: #fff;
                 }
 
@@ -335,57 +381,30 @@ const Checkout = () => {
                 }
 
                 .order-summary-box {
-                    background: #1a1a1a;
-                    padding: 1rem;
-                    border-radius: 4px;
+                    background: rgba(255, 255, 255, 0.03);
+                    padding: 1.15rem;
+                    border-radius: 8px;
                     margin-bottom: 1.5rem;
-                    border: 1px dashed #333;
+                    border: 1px dashed rgba(0, 229, 255, 0.15);
                 }
                 .summary-row {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     font-weight: 600;
+                    color: rgba(255, 255, 255, 0.6);
                 }
                 .total-amount {
                     color: var(--primary);
-                    font-size: 1.2rem;
-                }
-
-                .input-with-icon {
-                    position: relative;
-                }
-                .input-with-icon .icon {
-                    position: absolute;
-                    left: 10px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    color: var(--text-muted);
-                }
-                .input-with-icon input {
-                    padding-left: 2.5rem;
-                }
-
-                .success-message {
-                    text-align: center;
-                    padding: 3rem;
-                    background: #111;
-                    border-radius: var(--radius);
-                    border: 1px solid #222;
-                }
-                .success-message h2 {
-                    margin-top: 1rem;
-                }
-                .success-message p {
-                    color: var(--text-muted);
-                    margin-bottom: 2rem;
+                    font-size: 1.35rem;
+                    font-weight: 800;
                 }
 
                 .payment-options {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-                    gap: 1rem;
-                    margin-bottom: 2rem;
+                    gap: 0.75rem;
+                    margin-bottom: 1.5rem;
                 }
                 .payment-option {
                     cursor: pointer;
@@ -396,37 +415,87 @@ const Checkout = () => {
                     opacity: 0;
                 }
                 .payment-logo {
-                    border: 2px solid #333;
+                    border: 1px solid var(--border);
                     border-radius: var(--radius);
                     padding: 1.5rem;
                     text-align: center;
                     font-weight: 700;
-                    transition: all 0.2s;
+                    transition: all 0.3s ease;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
                     gap: 0.5rem;
-                    background: #1a1a1a;
+                    background: rgba(255, 255, 255, 0.02);
                     height: 100px;
+                }
+                .payment-option:hover .payment-logo {
+                    border-color: rgba(255, 255, 255, 0.15);
                 }
                 .payment-option.selected .payment-logo {
                     border-color: var(--primary);
-                    background: rgba(252, 136, 1, 0.1);
+                    background: rgba(0, 229, 255, 0.06);
+                    box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.1);
                 }
                 .esewa { color: #60bb46; }
                 .khalti { color: #5c2d91; }
-                .cod { color: var(--text-main); }
+                .cod { color: rgba(255, 255, 255, 0.7); }
                 
                 .error-message {
-                    background: rgba(217, 37, 10, 0.1);
-                    color: var(--alert);
-                    padding: 1rem;
-                    border-radius: 4px;
+                    background: rgba(255, 59, 48, 0.08);
+                    color: #ff3b30;
+                    padding: 0.85rem 1.15rem;
+                    border-radius: 8px;
                     margin-bottom: 1.5rem;
                     display: flex;
                     align-items: center;
                     gap: 0.5rem;
+                    font-size: 0.875rem;
+                    border: 1px solid rgba(255, 59, 48, 0.15);
+                }
+
+                .success-message {
+                    text-align: center;
+                    padding: 3rem 2rem;
+                    background: rgba(255, 255, 255, 0.02);
+                    border-radius: var(--radius);
+                    border: 1px solid var(--border);
+                }
+                .success-icon {
+                    width: 72px;
+                    height: 72px;
+                    border-radius: 50%;
+                    background: rgba(0, 229, 255, 0.08);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 1.5rem;
+                    color: var(--primary);
+                }
+                .success-message h2 {
+                    margin: 0 0 0.5rem;
+                    font-size: 1.75rem;
+                    font-weight: 800;
+                }
+                .success-message p {
+                    color: rgba(255, 255, 255, 0.4);
+                    margin: 0 0 0.5rem;
+                    font-size: 0.95rem;
+                }
+                .order-num {
+                    color: rgba(255, 255, 255, 0.5) !important;
+                    font-family: monospace;
+                }
+                .payment-method-badge {
+                    display: inline-block;
+                    background: rgba(0, 229, 255, 0.08);
+                    color: var(--primary);
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    margin: 1rem 0 1.5rem;
+                    border: 1px solid rgba(0, 229, 255, 0.12);
                 }
             `}</style>
         </div>

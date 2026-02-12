@@ -10,7 +10,7 @@ const DailyDeals = () => {
                 if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
                 if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
                 if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-                return prev; // Timer done
+                return prev;
             });
         }, 1000);
         return () => clearInterval(timer);
@@ -20,167 +20,242 @@ const DailyDeals = () => {
 
     return (
         <div className="daily-deals-module">
+            <div className="deal-glow" />
             <div className="deal-header">
                 <div className="deal-title">
-                    <Timer className="icon" />
-                    <h2>Daily Flash Sale</h2>
+                    <div className="deal-icon-wrap">
+                        <Timer size={20} />
+                    </div>
+                    <div>
+                        <h2>Flash Sale</h2>
+                        <span className="deal-subtitle">Limited time offer</span>
+                    </div>
                 </div>
                 <div className="countdown">
-                    <span>Ends in:</span>
-                    <div className="time-box">{formatTime(timeLeft.hours)}</div>
+                    <div className="time-unit">
+                        <div className="time-box">{formatTime(timeLeft.hours)}</div>
+                        <span className="time-label">HRS</span>
+                    </div>
                     <span className="colon">:</span>
-                    <div className="time-box">{formatTime(timeLeft.minutes)}</div>
+                    <div className="time-unit">
+                        <div className="time-box">{formatTime(timeLeft.minutes)}</div>
+                        <span className="time-label">MIN</span>
+                    </div>
                     <span className="colon">:</span>
-                    <div className="time-box">{formatTime(timeLeft.seconds)}</div>
+                    <div className="time-unit">
+                        <div className="time-box">{formatTime(timeLeft.seconds)}</div>
+                        <span className="time-label">SEC</span>
+                    </div>
                 </div>
             </div>
 
             <div className="deal-content">
                 <div className="deal-info">
                     <h3>Sony WH-1000XM5</h3>
-                    <p className="desc">Industry-leading noise cancellation.</p>
+                    <p className="desc">Industry-leading noise cancellation with exceptional comfort.</p>
                     <div className="price-box">
-                        <span className="original-price">$399.00</span>
                         <span className="sale-price">$299.00</span>
+                        <span className="original-price">$399.00</span>
                         <span className="discount-badge">-25%</span>
                     </div>
                     <div className="stock-bar">
-                        <div className="label">
+                        <div className="stock-label">
                             <span>Available: 12</span>
                             <span>Sold: 45</span>
                         </div>
                         <div className="progress">
-                            <div className="fill" style={{ width: '78%' }}></div>
+                            <div className="fill" style={{ width: '78%' }} />
                         </div>
                     </div>
-                    <button className="deal-btn">Claim Deal</button>
+                    <button className="deal-btn">
+                        <span>Claim Deal</span>
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                            <path d="M4 10h12m-6-6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                    </button>
                 </div>
                 <div className="deal-image-placeholder">
-                    {/* Placeholder for deal image */}
-                    <div className="placeholder-box"></div>
+                    <div className="placeholder-box" />
                 </div>
             </div>
 
             <style>{`
         .daily-deals-module {
-            background-color: #111;
-            border: 1px solid #333;
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 1.5rem;
-            margin: 2rem 0;
-            color: var(--text-main);
+            padding: 2rem;
+            margin: 3rem 0;
+            overflow: hidden;
+        }
+        .deal-glow {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 229, 255, 0.06) 0%, transparent 70%);
+            pointer-events: none;
         }
         .deal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #222;
-            padding-bottom: 1rem;
-            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.25rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
             gap: 1rem;
+            position: relative;
         }
         .deal-title {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
-        .deal-title .icon {
+        .deal-icon-wrap {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0, 229, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: var(--primary);
         }
         .deal-title h2 {
             margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .deal-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 0.5px;
         }
         .countdown {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-weight: 600;
+        }
+        .time-unit {
+            text-align: center;
         }
         .time-box {
-            background-color: var(--primary);
-            color: #fff;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            min-width: 32px;
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--primary);
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            min-width: 40px;
             text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            font-variant-numeric: tabular-nums;
+            border: 1px solid rgba(0, 229, 255, 0.15);
+        }
+        .time-label {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.3);
+            letter-spacing: 1px;
+            margin-top: 4px;
+            display: block;
+        }
+        .colon {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: -16px;
         }
         .deal-content {
             display: flex;
             gap: 2rem;
             align-items: center;
+            position: relative;
         }
         .deal-info {
             flex: 1;
         }
         .deal-info h3 {
-            font-size: 1.8rem;
+            font-size: 1.75rem;
+            font-weight: 800;
             margin: 0 0 0.5rem 0;
+            letter-spacing: -0.02em;
         }
         .desc {
-            color: var(--text-muted);
-            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin: 0 0 1.25rem 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
         }
         .price-box {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
             margin-bottom: 1.5rem;
         }
         .original-price {
             text-decoration: line-through;
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.9rem;
         }
         .sale-price {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 1.75rem;
+            font-weight: 800;
             color: var(--primary);
         }
         .discount-badge {
-            background-color: var(--alert);
-            color: #fff;
-            padding: 2px 6px;
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--primary);
+            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 700;
+            border: 1px solid rgba(0, 229, 255, 0.15);
         }
         .stock-bar {
             margin-bottom: 1.5rem;
         }
-        .stock-bar .label {
+        .stock-label {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.35);
+            margin-bottom: 0.4rem;
         }
         .stock-bar .progress {
-            height: 8px;
-            background-color: #222;
-            border-radius: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 2px;
             overflow: hidden;
         }
         .stock-bar .fill {
             height: 100%;
-            background-color: var(--primary);
+            background: linear-gradient(90deg, var(--primary), rgba(0, 229, 255, 0.6));
+            border-radius: 2px;
+            transition: width 0.5s ease;
         }
         .deal-btn {
-            background-color: var(--primary);
-            color: #fff;
+            background: var(--primary);
+            color: var(--background);
             border: none;
-            padding: 0.75rem 2rem;
-            font-size: 1rem;
+            padding: 0.85rem 2rem;
+            font-size: 0.875rem;
             font-weight: 600;
             border-radius: var(--radius);
-            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            letter-spacing: 0.3px;
         }
         .deal-btn:hover {
-            background-color: var(--primary-hover);
+            box-shadow: 0 8px 24px rgba(0, 229, 255, 0.3);
+            transform: translateY(-2px);
         }
         .deal-image-placeholder {
             flex: 1;
-            /* In a real app, this would be an image */
             display: none; 
         }
         @media (min-width: 768px) {
@@ -189,8 +264,9 @@ const DailyDeals = () => {
             }
             .placeholder-box {
                 width: 100%;
-                height: 250px;
-                background: linear-gradient(45deg, #222, #333);
+                height: 280px;
+                background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(0, 229, 255, 0.03));
+                border: 1px solid var(--border);
                 border-radius: var(--radius);
             }
         }

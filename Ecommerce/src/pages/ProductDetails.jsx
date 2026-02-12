@@ -17,7 +17,6 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        // Fetch product by ID
         const { data, error } = await supabase
           .from('products')
           .select('*, categories(name)')
@@ -26,7 +25,6 @@ const ProductDetails = () => {
 
         if (error) throw error;
 
-        // Map/Normalize data
         const mappedProduct = {
           ...data,
           price: parseFloat(data.price),
@@ -53,21 +51,26 @@ const ProductDetails = () => {
 
   const handleAddToCart = () => {
     if (!product) return;
-    // Normalize for cart (ensure 'image' property exists)
     const cartItem = {
       ...product,
       image: product.images[0]
     };
 
-    // Add multiple items based on quantity
     for (let i = 0; i < quantity; i++) {
       addToCart(cartItem);
     }
     alert('Added to cart!');
   };
 
-  if (loading) return <div className="product-details-page container" style={{ textAlign: 'center', padding: '4rem' }}>Loading...</div>;
-  if (error || !product) return <div className="product-details-page container" style={{ textAlign: 'center', padding: '4rem' }}>{error || 'Product not found'}</div>;
+  if (loading) return (
+    <div className="product-details-page container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+      <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
+        <div className="loading-spinner" style={{ width: 28, height: 28, border: '2px solid rgba(255,255,255,0.08)', borderTopColor: '#00e5ff', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 1rem' }} />
+        Loading...
+      </div>
+    </div>
+  );
+  if (error || !product) return <div className="product-details-page container" style={{ textAlign: 'center', padding: '4rem', color: 'rgba(255,255,255,0.4)' }}>{error || 'Product not found'}</div>;
 
   return (
     <div className="product-details-page container">
@@ -98,11 +101,11 @@ const ProductDetails = () => {
 
           <div className="rating-row">
             <div className="stars">
-              <Star size={16} fill="#FFC107" stroke="#FFC107" />
-              <Star size={16} fill="#FFC107" stroke="#FFC107" />
-              <Star size={16} fill="#FFC107" stroke="#FFC107" />
-              <Star size={16} fill="#FFC107" stroke="#FFC107" />
-              <Star size={16} fill="#FFC107" stroke="#FFC107" />
+              <Star size={14} fill="#00e5ff" stroke="#00e5ff" />
+              <Star size={14} fill="#00e5ff" stroke="#00e5ff" />
+              <Star size={14} fill="#00e5ff" stroke="#00e5ff" />
+              <Star size={14} fill="#00e5ff" stroke="#00e5ff" />
+              <Star size={14} fill="#00e5ff" stroke="#00e5ff" />
             </div>
             <span className="reviews-count">(24 reviews)</span>
           </div>
@@ -121,43 +124,43 @@ const ProductDetails = () => {
 
           <div className="stock-status">
             {product.stock_quantity > 0 ? (
-              <span style={{ color: '#10B981' }}>In Stock ({product.stock_quantity})</span>
+              <span className="in-stock">● In Stock ({product.stock_quantity})</span>
             ) : (
-              <span style={{ color: '#EF4444' }}>Out of Stock</span>
+              <span className="out-of-stock">● Out of Stock</span>
             )}
           </div>
 
           <div className="actions-section">
             <div className="quantity-selector">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
+              <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
               <span>{quantity}</span>
-              <button onChange={() => { }} onClick={() => setQuantity(quantity + 1)}>+</button>
+              <button onClick={() => setQuantity(quantity + 1)}>+</button>
             </div>
             <button className="add-to-cart-btn" onClick={handleAddToCart} disabled={product.stock_quantity <= 0}>
-              <ShoppingCart size={20} /> {product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
+              <ShoppingCart size={18} /> {product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
             </button>
             <button className="wishlist-btn-large">
-              <Heart size={20} />
+              <Heart size={18} />
             </button>
           </div>
 
           <div className="features-grid">
             <div className="feature-item">
-              <ShieldCheck size={24} className="icon" />
+              <div className="feature-icon-wrap"><ShieldCheck size={20} /></div>
               <div>
                 <h4>1 Year Warranty</h4>
                 <p>Official manufacturer warranty</p>
               </div>
             </div>
             <div className="feature-item">
-              <Truck size={24} className="icon" />
+              <div className="feature-icon-wrap"><Truck size={20} /></div>
               <div>
                 <h4>Free Shipping</h4>
                 <p>On all orders over $500</p>
               </div>
             </div>
             <div className="feature-item">
-              <RotateCcw size={24} className="icon" />
+              <div className="feature-icon-wrap"><RotateCcw size={20} /></div>
               <div>
                 <h4>30 Day Returns</h4>
                 <p>Hassle-free return policy</p>
@@ -177,13 +180,16 @@ const ProductDetails = () => {
                 <td>{value}</td>
               </tr>
             )) : (
-              <tr><td>No specifications available</td></tr>
+              <tr><td style={{ color: 'rgba(255,255,255,0.3)' }}>No specifications available</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
       <style>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
         .product-details-page {
           padding-top: 2rem;
           padding-bottom: 4rem;
@@ -201,11 +207,11 @@ const ProductDetails = () => {
         }
         
         .main-image-container {
-          background-color: #1a1a1a;
+          background: #0a0a0f;
           border-radius: var(--radius);
           overflow: hidden;
           margin-bottom: 1rem;
-          border: 1px solid #222;
+          border: 1px solid var(--border);
         }
         .main-image {
           width: 100%;
@@ -214,21 +220,26 @@ const ProductDetails = () => {
         }
         .thumbnail-list {
           display: flex;
-          gap: 1rem;
+          gap: 0.75rem;
           flex-wrap: wrap;
         }
         .thumbnail {
-          width: 80px;
-          height: 80px;
-          border: 1px solid #333;
-          border-radius: var(--radius);
+          width: 72px;
+          height: 72px;
+          border: 1px solid var(--border);
+          border-radius: 6px;
           overflow: hidden;
           cursor: pointer;
-          background: #111;
+          background: #0a0a0f;
           padding: 0;
+          transition: all 0.3s ease;
         }
         .thumbnail.active {
           border-color: var(--primary);
+          box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+        }
+        .thumbnail:hover {
+          border-color: rgba(255, 255, 255, 0.2);
         }
         .thumbnail img {
           width: 100%;
@@ -237,14 +248,16 @@ const ProductDetails = () => {
         }
 
         .breadcrumb {
-          color: var(--text-muted);
-          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.3);
+          font-size: 0.8rem;
           margin-bottom: 1rem;
         }
         .product-title {
-          font-size: 2.5rem;
+          font-size: clamp(1.5rem, 3vw, 2.25rem);
+          font-weight: 800;
           margin: 0 0 1rem 0;
           line-height: 1.2;
+          letter-spacing: -0.02em;
         }
         .rating-row {
           display: flex;
@@ -252,9 +265,13 @@ const ProductDetails = () => {
           gap: 0.5rem;
           margin-bottom: 1.5rem;
         }
+        .stars {
+          display: flex;
+          gap: 2px;
+        }
         .reviews-count {
-          color: var(--text-muted);
-          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.35);
+          font-size: 0.85rem;
         }
         
         .price-section {
@@ -265,151 +282,177 @@ const ProductDetails = () => {
         }
         .current-price {
           font-size: 2rem;
-          font-weight: 700;
+          font-weight: 800;
           color: var(--primary);
         }
         .old-price {
           text-decoration: line-through;
-          color: var(--text-muted);
-          font-size: 1.2rem;
+          color: rgba(255, 255, 255, 0.3);
+          font-size: 1.1rem;
         }
         .save-badge {
-          background-color: rgba(252, 136, 1, 0.1);
+          background: rgba(0, 229, 255, 0.1);
           color: var(--primary);
-          padding: 4px 8px;
+          padding: 4px 10px;
           border-radius: 4px;
           font-weight: 600;
-          font-size: 0.9rem;
+          font-size: 0.8rem;
+          border: 1px solid rgba(0, 229, 255, 0.15);
         }
 
         .description {
-          line-height: 1.7;
-          color: #ccc;
-          margin-bottom: 2rem;
+          line-height: 1.8;
+          color: rgba(255, 255, 255, 0.5);
+          margin-bottom: 1.5rem;
+          font-size: 0.95rem;
         }
 
         .stock-status {
             margin-bottom: 1.5rem;
             font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .in-stock {
+            color: #34c759;
+        }
+        .out-of-stock {
+            color: #ff3b30;
         }
 
         .actions-section {
           display: flex;
-          gap: 1rem;
+          gap: 0.75rem;
           margin-bottom: 2.5rem;
           flex-wrap: wrap;
         }
         .quantity-selector {
           display: flex;
           align-items: center;
-          border: 1px solid #333;
+          border: 1px solid var(--border);
           border-radius: var(--radius);
           overflow: hidden;
         }
         .quantity-selector button {
-          background: #222;
-          color: #fff;
-          width: 40px;
+          background: rgba(255, 255, 255, 0.04);
+          color: rgba(255, 255, 255, 0.7);
+          width: 42px;
           height: 48px;
-          font-size: 1.2rem;
+          font-size: 1.1rem;
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: all 0.2s ease;
         }
         .quantity-selector button:hover {
-          background-color: #333;
+          background: rgba(0, 229, 255, 0.08);
+          color: var(--primary);
         }
         .quantity-selector span {
-          width: 40px;
+          width: 42px;
           text-align: center;
           font-weight: 600;
+          font-variant-numeric: tabular-nums;
         }
         .add-to-cart-btn {
           flex: 1;
-          background-color: var(--primary);
-          color: #fff;
+          background: var(--primary);
+          color: var(--background);
           font-weight: 700;
-          font-size: 1.1rem;
+          font-size: 0.95rem;
           border-radius: var(--radius);
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 0.75rem;
-          transition: background 0.3s;
+          gap: 0.5rem;
+          transition: all 0.3s ease;
           padding: 0 2rem;
+          letter-spacing: 0.3px;
         }
-        .add-to-cart-btn:hover {
-          background-color: var(--primary-hover);
+        .add-to-cart-btn:hover:not(:disabled) {
+          box-shadow: 0 8px 24px rgba(0, 229, 255, 0.3);
+          transform: translateY(-1px);
         }
         .add-to-cart-btn:disabled {
-            background-color: #333;
+            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.25);
             cursor: not-allowed;
         }
         .wishlist-btn-large {
           width: 48px;
           height: 48px;
-          border: 1px solid #333;
+          border: 1px solid var(--border);
           background: transparent;
-          color: #fff;
+          color: rgba(255, 255, 255, 0.5);
           border-radius: var(--radius);
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: all 0.3s ease;
         }
         .wishlist-btn-large:hover {
-          border-color: var(--primary);
+          border-color: var(--border-hover);
           color: var(--primary);
+          background: rgba(0, 229, 255, 0.06);
         }
 
         .features-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 1.5rem;
-          border-top: 1px solid #222;
+          gap: 1.25rem;
+          border-top: 1px solid var(--border);
           padding-top: 2rem;
         }
         .feature-item {
           display: flex;
-          gap: 1rem;
+          gap: 0.75rem;
           align-items: flex-start;
         }
-        .feature-item .icon {
+        .feature-icon-wrap {
+          width: 40px;
+          height: 40px;
+          min-width: 40px;
+          border-radius: 50%;
+          background: rgba(0, 229, 255, 0.08);
+          display: flex;
+          align-items: center;
+          justify-content: center;
           color: var(--primary);
-          margin-top: 4px;
         }
         .feature-item h4 {
-          margin: 0 0 0.25rem 0;
-          font-size: 1rem;
+          margin: 0 0 0.2rem 0;
+          font-size: 0.9rem;
+          font-weight: 600;
         }
         .feature-item p {
           margin: 0;
-          font-size: 0.9rem;
-          color: var(--text-muted);
+          font-size: 0.8rem;
+          color: rgba(255, 255, 255, 0.35);
         }
 
         .specs-section {
-          background-color: #111;
+          background: rgba(255, 255, 255, 0.02);
           padding: 2rem;
           border-radius: var(--radius);
-          border: 1px solid #222;
+          border: 1px solid var(--border);
         }
         .specs-section h2 {
-          margin-top: 0;
-          margin-bottom: 1.5rem;
-          font-size: 1.5rem;
+          margin: 0 0 1.5rem;
+          font-size: 1.25rem;
+          font-weight: 700;
         }
         .specs-table {
           width: 100%;
           border-collapse: collapse;
         }
         .specs-table th, .specs-table td {
-          padding: 1rem;
-          border-bottom: 1px solid #222;
+          padding: 0.85rem 1rem;
+          border-bottom: 1px solid var(--border);
           text-align: left;
+          font-size: 0.9rem;
         }
         .specs-table th {
           width: 30%;
-          color: var(--text-muted);
+          color: rgba(255, 255, 255, 0.4);
           font-weight: 500;
         }
         .specs-table tr:last-child th, .specs-table tr:last-child td {
