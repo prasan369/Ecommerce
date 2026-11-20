@@ -11,7 +11,7 @@ const Hero = () => {
       name: 'Pro Max Phone',
       category: 'Smartphones',
       price: '$999',
-      image: 'https://images.unsplash.com/photo-1592286927505-83aee7b08aa0?w=800&q=80',
+      image: 'https://i02.appmifile.com/834_operatorx_operatorx_opx/11/01/2024/2a5eb0f5ac848104898a928f2daa6fdc.png',
       badge: 'New'
     },
     {

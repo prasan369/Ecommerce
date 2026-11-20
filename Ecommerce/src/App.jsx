@@ -14,7 +14,7 @@ import OrderDetail from './pages/OrderDetail';
 
 function App() {
   return (
-    <Router>
+    <Router basename='/Ecommerce'>
       <div className="app">
         <Header />
         <main>
